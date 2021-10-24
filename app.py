@@ -4,6 +4,7 @@ from flask_restful import Resource, Api, reqparse
 import pandas as pd
 
 app = flask.Flask(__name__)
+api = Api(app)
 app.config["DEBUG"] = True
 
 investments_path = './data/investments.csv'
