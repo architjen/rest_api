@@ -10,12 +10,11 @@ app.config["DEBUG"] = True
 # ref data: https://www.data.gouv.fr/fr/datasets/operations-de-construction-et-de-renovation-dans-les-lycees-francilens/#
 investments_path = './data/investments.csv'
 
-
 investment_put_args = reqparse.RequestParser()
-investment_put_args.add_argument("lycee", required=True)
-investment_put_args.add_argument("annee_de_livraison", required=True)
-investment_put_args.add_argument("ville", required=True)
-investment_put_args.add_argument("titreoperation", type=str, help="Name of the operation is required", required=True)
+investment_put_args.add_argument("lycee", type=str, required=True)
+investment_put_args.add_argument("annee_de_livraison", type=int)
+investment_put_args.add_argument("ville", type=str, required=True)
+investment_put_args.add_argument("titreoperation", type=str)
 investment_put_args.add_argument("codeuai", type=str, required=True)
 
 '''investment_put_args.add_argument("agent", type=str, help="Name of the company", required=True)
@@ -32,15 +31,27 @@ investment_put_args.add_argument("mode_de_devolution", type=str, help="Delivery 
 investment_put_args.add_argument("annee_d_individualisation", type=str, help="Name of the operation is required")
 investment_put_args.add_argument("envelope_prev_en_meu", type=float, help="Name of the company", required=True)'''
 
+# for getting all investments
 class Investments(Resource):
     def get(self):
         # add try - error
         col_list = ['titreoperation', 'lycee', 'ville', 'annee_de_livraison', 'codeuai']
         data = pd.read_csv(investments_path, delimiter=';', usecols=col_list)        
         data = data[:5].to_dict() # getting only 5 top data
-        return {'data': data}, 200 
-    
-    def post(self):
+        return data, 200 
+
+# for getting investments based on cities
+class Investments_ville(Resource):
+    def get(self, ville):
+        col_list = ['titreoperation', 'lycee', 'ville', 'annee_de_livraison', 'codeuai']
+        data = pd.read_csv(investments_path, delimiter=';', usecols=col_list)
+        data = data[:5]
+        data = data[data['ville'].str.contains(ville)]       
+        data = data.to_dict() 
+        return data, 200
+
+        
+def post(self):
         #return {'data': 'test'}
 
         args = investment_put_args.parse_args()  # parse arguments to dictionary
@@ -69,6 +80,8 @@ class Investments(Resource):
             return {'data': data.to_dict()}, 200  # return data with 200 OK'''
 
 api.add_resource(Investments, '/investments')
+
+api.add_resource(Investments_ville, '/investments/<string:ville>')
 
 if __name__ == "__main__":
     app.run()
