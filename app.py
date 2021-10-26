@@ -4,6 +4,8 @@ from flask_restful import Resource, Api, reqparse
 import pandas as pd
 from resources import fetch_data as fd # for fetching data 
 
+# TO DO: Use SQL as a database once its validated on the batch data (TIPS: MongoDB)
+
 app = flask.Flask(__name__)
 api = Api(app)
 app.config["DEBUG"] = True
@@ -18,7 +20,7 @@ investment_put_args.add_argument("ville", type=str, required=True)
 investment_put_args.add_argument("titreoperation", type=str)
 investment_put_args.add_argument("codeuai", type=str, required=True)
 
-# add these once the testing has been done on the initial batch of data
+# TO DO: add these once the testing has been done on the initial batch of data
 '''investment_put_args.add_argument("agent", type=str, help="Name of the company", required=True)
 investment_put_args.add_argument("ppi", type=str, help="Delivery year")
 investment_put_args.add_argument("high school", type=str, help="Name of the operation is required")
@@ -36,7 +38,7 @@ investment_put_args.add_argument("envelope_prev_en_meu", type=float, help="Name 
 # for getting all investments
 class Investments(Resource):
     def get(self):
-        # add try - error
+        # TO DO: add try - error
         data = fd.data(investments_path)
         data = data.to_dict() # getting only 5 top data
         return data, 200 
@@ -44,6 +46,7 @@ class Investments(Resource):
 # for getting investments based on cities
 class Investments_ville(Resource):
     def get(self, ville):
+        # TO DO: add try - error
         data = fd.data(investments_path)
         data = data[data['ville'].str.contains(ville)]       
         data = data.to_dict() 
@@ -51,6 +54,7 @@ class Investments_ville(Resource):
 
 # for getting investment/s based on Id
 class Investments_id(Resource):
+    # TO DO: add try error
     def get(self, id):
         data = fd.data(investments_path)
         data = data[data['codeuai'] == id]       
