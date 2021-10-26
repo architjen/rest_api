@@ -10,6 +10,12 @@ app.config["DEBUG"] = True
 # ref data: https://www.data.gouv.fr/fr/datasets/operations-de-construction-et-de-renovation-dans-les-lycees-francilens/#
 investments_path = './data/investments.csv'
 
+col_list = ['titreoperation', 'lycee', 'ville', 'annee_de_livraison', 'codeuai']
+data = pd.read_csv(investments_path, delimiter=';', usecols=col_list)
+data = data[:5]
+data = data[data['codeuai'] == '0750671X']       
+data = data.to_dict() 
+
 investment_put_args = reqparse.RequestParser()
 investment_put_args.add_argument("lycee", type=str, required=True)
 investment_put_args.add_argument("annee_de_livraison", type=int)
@@ -17,6 +23,7 @@ investment_put_args.add_argument("ville", type=str, required=True)
 investment_put_args.add_argument("titreoperation", type=str)
 investment_put_args.add_argument("codeuai", type=str, required=True)
 
+# add these once the testing has been done on the initial batch of data
 '''investment_put_args.add_argument("agent", type=str, help="Name of the company", required=True)
 investment_put_args.add_argument("ppi", type=str, help="Delivery year")
 investment_put_args.add_argument("high school", type=str, help="Name of the operation is required")
@@ -47,6 +54,15 @@ class Investments_ville(Resource):
         data = pd.read_csv(investments_path, delimiter=';', usecols=col_list)
         data = data[:5]
         data = data[data['ville'].str.contains(ville)]       
+        data = data.to_dict() 
+        return data, 200
+
+class Investments_id(Resource):
+    def get(self, id):
+        col_list = ['titreoperation', 'lycee', 'ville', 'annee_de_livraison', 'codeuai']
+        data = pd.read_csv(investments_path, delimiter=';', usecols=col_list)
+        data = data[:5]
+        data = data[data['codeuai'] == id]       
         data = data.to_dict() 
         return data, 200
 
@@ -81,7 +97,10 @@ def post(self):
 
 api.add_resource(Investments, '/investments')
 
-api.add_resource(Investments_ville, '/investments/<string:ville>')
+api.add_resource(Investments_ville, '/investments/city/<string:ville>')
+
+api.add_resource(Investments_id, '/investments/id/<string:id>')
+
 
 if __name__ == "__main__":
     app.run()
