@@ -1,15 +1,20 @@
 # function for fetching data
-# (create a SQLAlchemy db, once all the test passes) 
+# (create an SQLAlchemy db, once all the test pass) USE: try-except-finally
 
 import pandas as pd
 
-investments_path = './data/investments.csv'
-
 def data(investments_path):
-    col_list = ['titreoperation', 'lycee', 'ville', 'annee_de_livraison', 'codeuai']
-    data = pd.read_csv(investments_path, delimiter=';', usecols=col_list)
-    data = data[:5]
-    return data
+    col_list = ['lycee', 'ville', 'annee_de_livraison', 'codeuai']
+    try:
+        data_inv = pd.read_csv(investments_path, delimiter=';', usecols=col_list)
+        data_inv = data_inv[:5]
+        return data_inv
+    except FileNotFoundError as e:
+        print(e)
+        return None
+    except Exception as e:
+        print(e)
+        return None
 
 if __name__ == "__main__":
     investments_path = './data/investments.csv'
