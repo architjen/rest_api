@@ -46,13 +46,13 @@ class Investments(Resource):
 
     def post(self):
 
-        investment_put_args = reqparse.RequestParser()
-        investment_put_args.add_argument("id", type=str, required=True)
-        investment_put_args.add_argument("lycee", type=str, required=True)
-        investment_put_args.add_argument("ville", type=str, required=True)
-        investment_put_args.add_argument("year", type=int, required=True)
+        investment_post_args = reqparse.RequestParser()
+        investment_post_args.add_argument("id", type=str, required=True)
+        investment_post_args.add_argument("lycee", type=str, required=True)
+        investment_post_args.add_argument("ville", type=str, required=True)
+        investment_post_args.add_argument("year", type=int, required=True)
 
-        args = investment_put_args.parse_args()
+        args = investment_post_args.parse_args()
 
         data = fd.data(investments_path)
         if args['id'] in list(data['codeuai']):
