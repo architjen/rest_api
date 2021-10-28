@@ -1,48 +1,52 @@
+import config
 import flask
-from flask import request, jsonify, make_response
-from flask_restful import Resource, Api, reqparse
+from flask import request, jsonify, make_response, json, render_template
+from flask_restful import Resource, Api, reqparse, abort
 import pandas as pd
 from resources import fetch_data as fd # for fetching data 
+#from werkzeug.exceptions import flaskHTTPException
 
-# TO DO: Use SQL as a database once its validated on the batch data (TIPS: MongoDB)
+# TO DO: --> Use SQL as a database once its validated on the batch data
 
 app = flask.Flask(__name__)
 api = Api(app)
 app.config["DEBUG"] = True
 
 # ref data: https://www.data.gouv.fr/fr/datasets/operations-de-construction-et-de-renovation-dans-les-lycees-francilens/#
-investments_path = './data/investments.csv'
+investments_path = config.PATH
 
-'''investment_put_args = reqparse.RequestParser()
-investment_put_args.add_argument("lycee", type=str, required=True)
-investment_put_args.add_argument("annee_de_livraison", type=int)
-investment_put_args.add_argument("ville", type=str, required=True)
-investment_put_args.add_argument("codeuai", type=str, required=True)'''
+# TO DO: --> add other var once the testing has been validated on the initial batch of data
 
-# TO DO: add these once the testing has been validated on the initial batch of data
+'''investment_args.add_argument("agent", type=str, help="Name of the company", required=True)
+investment_args.add_argument("titreoperation", type=str)
+investment_args.add_argument("ppi", type=str, help="Delivery year")
+investment_args.add_argument("high school", type=str, help="Name of the operation is required")
+investment_args.add_argument("market_notification", type=str, help="Name of the company")
+investment_args.add_argument("longitude", type=float, help="Name of the operation is required", required=True)
+investment_args.add_argument("progress_state", type=str, help="Name of the company")
+investment_args.add_argument("amount_of_ap_votes_en_meu", type=float, help="Delivery year")
+investment_args.add_argument("cao_attribution", type=str, help="Name of the operation is required")
+investment_args.add_argument("latitude", type=float, help="Name of the company", required=True)
+investment_args.add_argument("maitrise_d_oeuvre", type=str, help="Delivery year")
+investment_args.add_argument("mode_de_devolution", type=str, help="Delivery year")
+investment_args.add_argument("annee_d_individualisation", type=str, help="Name of the operation is required")
+investment_args.add_argument("envelope_prev_en_meu", type=float, help="Name of the company", required=True)'''
 
-'''investment_put_args.add_argument("agent", type=str, help="Name of the company", required=True)
-investment_put_args.add_argument("titreoperation", type=str)
-investment_put_args.add_argument("ppi", type=str, help="Delivery year")
-investment_put_args.add_argument("high school", type=str, help="Name of the operation is required")
-investment_put_args.add_argument("market_notification", type=str, help="Name of the company")
-investment_put_args.add_argument("longitude", type=float, help="Name of the operation is required", required=True)
-investment_put_args.add_argument("progress_state", type=str, help="Name of the company")
-investment_put_args.add_argument("amount_of_ap_votes_en_meu", type=float, help="Delivery year")
-investment_put_args.add_argument("cao_attribution", type=str, help="Name of the operation is required")
-investment_put_args.add_argument("latitude", type=float, help="Name of the company", required=True)
-investment_put_args.add_argument("maitrise_d_oeuvre", type=str, help="Delivery year")
-investment_put_args.add_argument("mode_de_devolution", type=str, help="Delivery year")
-investment_put_args.add_argument("annee_d_individualisation", type=str, help="Name of the operation is required")
-investment_put_args.add_argument("envelope_prev_en_meu", type=float, help="Name of the company", required=True)'''
-
-# for getting all investments
+# class for getting all investments and creating new 
 class Investments(Resource):
+
     def get(self):
-        # TO DO: add try - error
+        
         data = fd.data(investments_path)
-        data = data.to_dict() # getting only 5 top data
-        return data, 200 
+        
+        if not isinstance(data, pd.DataFrame):
+            #return {'from': 'app.py'}, 500
+            abort(500, description = 'Internal server error, data fetching issues!')
+
+        data = data.to_dict()
+        
+        return data, 200
+        #return render_template('index.html',result=data)
 
     def post(self):
 
@@ -55,9 +59,13 @@ class Investments(Resource):
         args = investment_post_args.parse_args()
 
         data = fd.data(investments_path)
+        
+        if not isinstance(data, pd.DataFrame):
+            abort(500, description = 'Internal server error, data fetching issues!')
+
         if args['id'] in list(data['codeuai']):
             #data = data.to_dict()
-            return {'data': 'id already exists'}, 409 # conflict
+            return {'error': 'data already exists'}, 409 #conflict
         else: 
             data_ret = {
                 'codeuai': args['id'],
