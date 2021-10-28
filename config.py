@@ -1,0 +1,1 @@
+PATH = './data/investments.csv'
