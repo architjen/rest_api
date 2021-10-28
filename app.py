@@ -73,55 +73,75 @@ class Investments(Resource):
                 'ville': args['ville'],
                 'annee_de_livraison': args['year']
             }
+            # TO DO: --> append it to db as well
+            # data = data.append(data_ret, ignore_index=True)
             return data_ret, 200
     
     @app.errorhandler(404)
     def error_404(error):
-        message = "OOPS!! The requested URL was not found on the server.  Error 404!"
+        message = "OOPS!! The requested URL was not found on the server.  Error 404"
         return make_response(jsonify({'error': message}), 404)
-
+  
 # for getting investments based on cities
 class Investments_ville(Resource):
     def get(self, ville):
-        # TO DO: add try - error
+
         data = fd.data(investments_path)
-        data = data[data['ville'].str.contains(ville)]       
+
+        if not isinstance(data, pd.DataFrame):
+            abort(500, description = 'Internal server error, data fetching issues!')
+
+        # TO DO: --> work on regex to query miscellaneous (lowercase/uppercase/prefix/suffix) string filtering  
+        data = data[data['ville'].str.contains(ville)]
+        if data.empty:
+            return {'error': 'no city found'}, 400 # bad request
         data = data.to_dict() 
         return data, 200
 
-# for getting an investment based on Id
+# for getting an investment and updating the existing ones based on Id
 class Investments_id(Resource):
-    # TO DO: add try error
+    
     def get(self, id):
+        
         data = fd.data(investments_path)
-        data = data[data['codeuai'] == id]       
+        if not isinstance(data, pd.DataFrame):
+            abort(500, description = 'Internal server error, data fetching issues!')
+        
+        data = data[data['codeuai'] == id]  
+        if data.empty:
+            return {'error': 'no id found'}, 400 # bad request     
         data = data.to_dict() 
         return data, 200
 
-    '''args = investment_put_args.parse_args()  # parse arguments to dictionary
+    def patch(self, id):
 
-        # read our CSV
-        data = pd.read_csv('users.csv')
+        investment_patch_args = reqparse.RequestParser()
+        investment_patch_args.add_argument("lycee", type=str)
+        investment_patch_args.add_argument("ville", type=str)
+        investment_patch_args.add_argument("year", type=int)
+        args = investment_patch_args.parse_args()
 
-        return {'data': 'test'}
-            
-        if args['company'] in list(data['entreprise']):
-            return {
-                'message': f"'{args['userId']}' already exists."
-            }, 401
+        data = fd.data(investments_path)
         
-        else:
-            # create new dataframe containing new values
-            new_data = pd.DataFrame({
-                'entreprise': args['company'],
-                'annee_de_livraison': args['delivery_year'],
-                'ville': args['city']
-            })
+        if not isinstance(data, pd.DataFrame):
+            abort(500, description = 'Internal server error, data fetching issues!')
 
-            # add the newly provided values
-            data = data.append(new_data, ignore_index=True)
-            data.to_csv('users.csv', index=False)  # save back to CSV
-            return {'data': data.to_dict()}, 200  # return data with 200 OK'''
+        new_data = data[data['codeuai'] == id]
+        if new_data.empty:
+            return {'error': 'no id found'}, 400
+        
+        if args['lycee']:
+            data.loc[data['codeuai'] == id, 'lycee'] = args['lycee']
+        if args['ville']:
+            data.loc[data['codeuai'] == id, 'ville'] = args['ville']
+        if args['year']:
+            data.loc[data['codeuai'] == id, 'annee_de_livraison'] = args['year']
+
+        data = data.to_dict()
+        # TO DO: --> save the data once the updates are made
+        # data.to_csv('Investments.csv', index=False)  # save back to CSV
+        return data, 200
+
 
 api.add_resource(Investments, '/investments')
 
