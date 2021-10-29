@@ -3,12 +3,14 @@ import flask
 from flask import request, jsonify, make_response, json, render_template
 from flask_restful import Resource, Api, reqparse, abort
 import pandas as pd
+from flask_cors import CORS, cross_origin
 from resources import fetch_data as fd # for fetching data 
 #from werkzeug.exceptions import flaskHTTPException
 
 # TO DO: --> Use SQL as a database once its validated on the batch data
 
 app = flask.Flask(__name__)
+CORS(app, expose_headers='Authorization', resources={r"/investments": {"origins": "*"}})
 api = Api(app)
 app.config["DEBUG"] = True
 
@@ -34,7 +36,7 @@ investment_args.add_argument("envelope_prev_en_meu", type=float, help="Name of t
 
 # class for getting all investments and creating new 
 class Investments(Resource):
-
+    #@cross_origin
     def get(self):
         
         data = fd.data(investments_path)
@@ -43,8 +45,7 @@ class Investments(Resource):
             #return {'from': 'app.py'}, 500
             abort(500, description = 'Internal server error, data fetching issues!')
 
-        data = data.to_dict()
-        
+        data = data.to_dict('records')
         return data, 200
         #return render_template('index.html',result=data)
 
