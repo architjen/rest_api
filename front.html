@@ -1,0 +1,68 @@
+
+ <!DOCTYPE html>
+ <html lang="en">
+ <head>
+  <meta charset="UTF-8">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
+  <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/r/dt/dt-1.10.9/datatables.min.css"/>
+  <script type="text/javascript" src="https://cdn.datatables.net/r/dt/dt-1.10.9/datatables.min.js"></script>
+  <title>Investments : Datatables </title>
+</head>
+<body>
+  <div class="container" style="padding:50px 250px;">
+    <h1>Investment tables</h1>
+	<div id="header"></div>
+	<table id="photos" class="display" cellspacing="0" width="100%">
+        <thead>
+            <tr>
+                <th>Codeuai</th>
+                <th>Lycee</th>
+                <th>Ville</th>
+                <th>Annee_de_livraison</th>
+            </tr>
+        </thead>
+        
+    </table>
+	<div id="footer"></div>
+  </div>
+</body>
+</html>
+<script type="text/javascript">
+  $(document).ready(function(){
+	// $('#header').load('../header-ads.html');
+    // $('#footer').load('../footer-ads.html');
+	
+    var arrayReturn = [];
+            $.ajax({
+                type: "GET",
+                // url: "http://127.0.0.1:5000/investments",
+                url: "https://rest-api-investments.herokuapp.com/investments",
+                async: false,
+                dataType: 'json',
+                success: function (data) {
+                    len = data.length
+                    console.log("data.length is ", len)
+					for (var i = 0; i < len; i++) {
+						arrayReturn.push([ data[i].codeuai, data[i].lycee, data[i].ville, data[i].annee_de_livraison]);
+					}
+                    //console.log(arrayReturn)
+				inittable(arrayReturn);
+                }
+            });
+	function inittable(data) {	
+		//console.log(data);
+		$('#photos').DataTable( {
+			"aaData": data,
+			"dataSrc": function ( json ) {
+				console.log(json);
+			  for ( var i=0, ien=json.data.length ; i<ien ; i++ ) {
+				json.data[i][0] = '<a href="/message/'+json.data[i][0]+'>View message</a>';
+			  }
+			  return json.data;
+			}
+		} );
+	}
+  });
+</script>
