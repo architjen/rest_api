@@ -96,7 +96,7 @@ class Investments_ville(Resource):
         data = data[data['ville'].str.contains(ville)]
         if data.empty:
             return {'error': 'no city found'}, 400 # bad request
-        data = data.to_dict() 
+        data = data.to_dict('records') 
         return data, 200
 
 # for getting an investment and updating the existing ones based on Id
@@ -111,7 +111,7 @@ class Investments_id(Resource):
         data = data[data['codeuai'] == id]  
         if data.empty:
             return {'error': 'no id found'}, 400 # bad request     
-        data = data.to_dict() 
+        data = data.to_dict('records') 
         return data, 200
 
     def patch(self, id):
@@ -138,7 +138,7 @@ class Investments_id(Resource):
         if args['year']:
             data.loc[data['codeuai'] == id, 'annee_de_livraison'] = args['year']
 
-        data = data.to_dict()
+        data = data.to_dict('records')
         # TO DO: --> save the data once the updates are made
         # data.to_csv('Investments.csv', index=False)  # save back to CSV
         return data, 200
