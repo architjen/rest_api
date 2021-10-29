@@ -8,7 +8,7 @@ def data(investments_path):
     col_list = ['lycee', 'ville', 'annee_de_livraison', 'codeuai']
     try:
         data_inv = pd.read_csv(investments_path, delimiter=';', usecols=col_list)
-        data_inv = data_inv[:5]
+        data_inv = data_inv[:50]
         return data_inv
     except FileNotFoundError as e:
         #print(e)
